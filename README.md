@@ -58,3 +58,4 @@ El planificador de prcesos es aquel que designa los distintos programas o tareas
 Los procesos estan listos para ser ejecutados entran a una cola de procesos (ready queue).
 
 Un proceso puede crear distintos procesos, aquellos que crean procesos se llaman *procesos padres* y el nuevo procesos se llama *proceso hijo*.\ hay dos opciones, el proceso padre sigue ejecutando con los hijos o el padre espera a que los hijos terminen.\
+ nuevo texto

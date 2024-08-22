@@ -321,8 +321,39 @@ La no expropiativa no puede ser interrumpido por el sistema operativo hasta que 
 
 ##### Algoritmos de Planificacion
 
+- First-Come, First-Served: Es el más simple, se ejecuta de principio a fin ininterrumpidamente, la CPU es asignada a los procesos por orden de llegada, es mediante una cola FIFO (first in first out), la única desventaja es que la cola de esprea es muy alta
+- Round Robin: Cada proceso es asignado a la CPU por un tiempo fijo (time slice), una vez finalizado el proceso la CPU le es expropiada al proceso y el SO lo pone al final de la cola, requiere interrupciones de timer. Al usar este metodo se puede ver perdida de tiempo por los cambio de contexto, el tiempo de cambio no puede ser muy chico y el tiempo si es muy garnde tiende a comportarse como un FCFS.
+- Shortest job first: Se requiere información del futuro, cuantas rafagas de CPU requieren los procesos, este algoritmo asigna primero el proceso que requiere menos catidad de computo, su finalidad es terminar los procesos cortos primero.
+- SRTF Adaptivo: Cambiala política basándose en el comportamiento pasado, funciona cuando el proceso tiene comportamientos predecibles.
+- Planificación por prioridad: Se le asigna una proriedad a cada proceso y la CPU toma la cual tiene proriedad más alta, por ejemplo podemos ver que SJF la proriedad esta en la catidad de computos, la más corta va primero.
 
 
+Planificación Multinivel Se consideran categorias de procesos, los batch, interactivos, entre otros. Hay distintos algoritmos para cada categoria.
+
+![multinivel](multinivel.png)
+
+##### Multilevel Feedback Queue
+
+Diseñado por Corbato, busca optimizar el tiempo e completar los procesos (turnaround time) y al mismo tiempo busca minimizar el tiempo de respuesta. Para esto este sistema tiene unas reglas que sigue para optimizar de mejor manera el tiempo.
+- Regla 1: si prioridad(A) > prioridad(B), se ejecuta A.
+- Regla 2: si prioridad(A) = prioridad(B), se ejecutan ambas en Round Robin.
+- Regla 3: Cuando un trabajo llega, es puesto en la maxima prioridad.
+- Regla 4: Una vez que el proceso usa toda su asignación de tiempo en un nivel dado, su prioridad baja y se mueve a una cola de menor prioridad.
+- Regla 5: Despues de un periodo S, se mueven todos los procesos de prioridad a una más alta.
+
+Es interesante la conclusión de esto ya que observa la ejecución de los procesos suponiendo que en un comienza son cortos y luego es capaz de ajustar la priorización dependiendo de lo largo y la carga al CPU
+
+##### Inter-Process Communocation
+![IPC](IPC.png)
+
+Mecanismo para que puedan comunicarse entre si, se pueden comunicar sin la necesida de tener variables globales en el sistema, puede ser directa entre procesos o indirecta mediante casillas de mensajería.\
+Mensajería directa:
+- send(P,message), envia un mensaje al proceso P.
+- receive(message, Q), recibe un mensaje del proceso Q.
+
+Mensajería indirecta: 
+- send(A, message), envia mensaje al casilla A.
+- receive(message,A), recibe mensaje de la casilla A.
 
 
 

@@ -355,5 +355,161 @@ Mensajería indirecta:
 - send(A, message), envia mensaje al casilla A.
 - receive(message,A), recibe mensaje de la casilla A.
 
+Una casilla puede ser de un proceso en particular o del mismo SO, para que dos procesos se comunique deben establecer un canal de comunicación, es necesario un canal físico y lógico.
+
+##### Pipes ordinarios
+
+son un canal de comunicación unidireccional, un proceso escribe al pipe y el otro pide leer lo del pipe.
+
+Aca va un ejemplo de pipe ordinario en codigo.
+
+![pipe](pipe_ordinario.png)
+
+##### Named Pipes
+Hacen uso del sistema de archivos pero no son archivos. Se crean usando el comando mkfifo
+
+````sh
+mkfifo named_pipe
+echo "Hi" > named_pipe &
+cat named_pipe
+````
+La primeria linea de codigo crea el named pipe, luego se escribe dentro del pipe y la ultima lee adentro del pipe.
+
+##### Unix domain Sockets
+
+Son canales de comunicación bidimensionales, podemos conectar procesos servidores y procesos clientes, varios clientes pueden comunicarse con el servidor mediante este metodo, postgresql es un ejemplo de utulización de de UDS.
+
+Resumen OSTEP
+---
+
+Cuando hacemos un proseso en modo de usuario esta limitado a lo que puede hacer, por ejemplo no puede hacer E/S request, ya que el SO es muy probable que mate el proceso. La otra manera de correr el proceso es atravez del modo kernel, este lo corre directamente el SO y si puede hacer peticiones de E/S.
+
+##### Cooperative Approach: wait for system calls
+
+Se puede decir que el SO confía en que el proceso se va a comportar bien, procesos que corren por demaciado tiempo el SO asume que va a dar CPU para que corra otro proceso, esto se logra mediante un System Call llamado yield, que transfiere el control al SO y ver si decide correr otro proceso.
+
+##### Non-Cooperative Approach: The OS takes control
+
+Cuando una aproximación cooperativa se queda pegado en un loop la única solución es reiniciar el sistema. Para solucionar esto se utiliza un timer interrupt, el cual interrumpe cada cierto tiempo el proceso y toma control el SO y decide que proceso correr en ese minuto, luego que parte otro proceso, el timer vuelve a activarse.
+
+##### Saving or Restoring Context 
+
+Ya sabemos que pasa con el SO al interrumpir un proceso puede eligir uno nuevo o quedar con el que se esta ejecutando en el minuto, para saber eso existen los *sheduler*, si decide cambiar hablamos de un cambio de contexto, cuando pasa esto el SO tiene que ver si guardar datos en un registro y pedir despues los datos para otro proceso.
+
+##### Sheduling Rules
+
+ 1. Cada proceso corre por la misma cantidad de tiempo.
+ 2. Todos los procesos llegan al mismo tiempo.
+ 3. Una vez que empieza termina
+ 2. Solo usan CPU
+ 2. El run-time es conocido
+
+ ##### Propocitional Share
+
+ Los tickets son medidas para ver cuanto vale el *peso* del proceso, un ejemplo de esto es un proceso A y B, el A tiene 75 tickets y el B 25 tickets, podemos decir que A va a recibir el 75% del CPU y B el sobrante.
+
+ ##### Lottery Sheduling
+
+ Lo que hace este tipo de planificador es que elije de manera probabilistica el ticket ganador, osea no necesariamente el de mayor tamaño corre primero, se puede decir que tiene su cierto grado de alazar pero igual el proceso que tiene más tickets sale más veces seguidas.
+
+Resumen ppt 4
+---
+
+##### Productor-Consumidor
+
+Supongamos que tenemos dos procesos, uno consumidor y otro productor.
+````c
+// productor
+while(true){
+    while(counter == BUFFER_SIZE)
+        //no hace nada
+    buffer[in]=item;
+    in = (in+1) % BUFFER_SIZE;
+    counter++;
+    
+}
+````
+
+````c
+// consumidor
+while(true){
+    while(counter == 0)
+        // no hace nada
+    item = buffer[out]
+    out = (out+1) % BUFFER_SIZE;
+    counter--;
+
+    
+}
+````
+### explicacion de un buffer 
+Un buffer es una región de memoria utilizada para almacenar datos temporalmente mientras se transfieren de un lugar a otro. Los buffers son ampliamente utilizados en la programación y en los sistemas operativos para gestionar el flujo de datos entre procesos, dispositivos de entrada/salida, y redes.
+
+Características de un Buffer
+Almacenamiento Temporal: Los buffers almacenan datos temporalmente para equilibrar las diferencias en la velocidad de procesamiento entre dos sistemas o componentes.
+Tamaño Fijo o Dinámico: Los buffers pueden tener un tamaño fijo o dinámico, dependiendo de la implementación y el uso específico.
+FIFO (First In, First Out): En muchos casos, los buffers funcionan como colas FIFO, donde el primer dato en entrar es el primero en salir.
+Sincronización: En entornos de múltiples hilos o procesos, el acceso al buffer debe estar sincronizado para evitar condiciones de carrera y asegurar la coherencia de los datos.
+
+
+##### Condición de carrera
+
+Cuando varios procesos acceden y manipulan un mismo dato en forma concurrente, y el resultado depende de el orden en que se hayan ejecutado, estamos ante una condición de carrera. Para evitar esto debemos hacer que solo uno pueda manipular el dato que se esta procesando.
+
+##### Problema de la sección critica 
+
+Permite que los procesos puedan cooperar sin estorbarse, cada proceso debe pedir permiso para ejecutar su sección crítica.\
+![critica](critica.png)\
+Acá podemos ver que pidepermiso mediante la *entry section*, despues de ejecuta la sección critica, y termina con un protocolo de salida que es el *exit section* y ejecuta el resto del programa.
+
+Requisitos:
+- Exclusión mutua: Solo un proceso puede entrar a su sección crítica.
+- Progreso: Ningún proceso fuera de una sección critica puede impedir que un proceso entre en su sección crítica.
+- Espera acotada: El tiempo de espera debe ser limitado, tiene que existir un numero de veces que un proceso puede acceder a su sección cuando otro pidó acceso a la sección critica.
+
+##### Semáforos 
+
+Permite sincronizar procesos asincronicos, un semáforo S lo podemos modelar como una variable entera que accede a travéz de operaciones atómicas; wait() y Signal()
+
+````c
+wait(S){
+    while S <= 0; 
+        S--;
+}
+
+signal(S){
+    S++;
+}
+````
+
+##### Semáforo Binario (Mutex)
+
+Son aquellos que sus valores pueden ser 1 o 0, podemos usar semáforos para solucionar problemas de sección crítica de varios procesos, los n procesos pueden compartir un semáforo de la siguente manera.
+
+````c
+do{
+    wait(mutex);
+        // sección crítica
+    signal(mutex);
+    //código
+    
+}while(true)
+````
+
+Es posible implementar semáforos se pueden implementar para evitar la espera ocupada.
+````c
+typedef struct{
+    int value;
+    struct process *list;
+} semaphore;
+
+wait(semaphore *S){
+    S-> value--;
+    if (S->value < 0){
+        // agregar proceso
+        block();
+    }
+}
+````
 
 
